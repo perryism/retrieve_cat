@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "retrieve_cat"
+version = "0.1.0"
+description = ""
+authors = ["Perry <perryism@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+langchain = "^0.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+rag = "retrieve_cat.cli.main:main"
