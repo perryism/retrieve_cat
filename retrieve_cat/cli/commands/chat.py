@@ -1,5 +1,7 @@
 from retrieve_cat.rag.rag_config import RagConfig
-from retrieve_cat.rag.utils import Rag 
+from retrieve_cat.rag.utils import Rag
+import warnings
+warnings.filterwarnings("ignore")
 
 def chat(parser):
     parser.add_argument("-c", "--config", required=True, help="config path")
