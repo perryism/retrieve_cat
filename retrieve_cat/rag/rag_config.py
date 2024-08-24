@@ -20,7 +20,7 @@ class RagConfig:
 
     @property
     def llm(self):
-        return llm_factory.create(self.data["llm"]["type"], **self.data["llm"]["args"])
+        return llm_factory.create(self.data["llm"]["type"], **self.data["llm"].get("args", {}))
 
     @property
     def embedding_model(self):
