@@ -1,6 +1,7 @@
 import logging
 from langchain_core.documents import Document
 from retrieve_cat.rag.embeddings import TextExtractor, PdfExtractor
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +16,16 @@ class Collection:
         self.engine_wrapper = engine_wrapper
 
     def to_documents(self, filepath, chunk_size, chunk_overlap) -> list[Document]:
-        # if filepath extension is txt
-        if filepath.endswith(".txt"):
+        #if filepath is a folder
+        if os.path.isdir(filepath):
+            logger.debug(f"{filepath} is a folder")
+            documents = []
+            for file in os.listdir(filepath):
+                logger.info(f"Getting chunks from {file}")
+                docs = self.to_documents(os.path.join(filepath, file), chunk_size, chunk_overlap)
+                documents += docs
+            return documents
+        elif filepath.endswith(".txt"):
             extractor = TextExtractor(filepath, chunk_size, chunk_overlap)
         elif filepath.endswith(".pdf"):
             extractor = PdfExtractor(filepath)
