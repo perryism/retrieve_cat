@@ -27,6 +27,10 @@ class RagConfig:
         return self.data["embedding_model"] 
 
     @property
+    def sources(self) -> list[str]:
+        return self.data["sources"]
+
+    @property
     def engine(self):
         rag_engine = self.data["index"]["engine"]
         if rag_engine == "chromadb":
