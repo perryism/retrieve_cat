@@ -11,7 +11,7 @@ python -m retrieve_cat.cli.main init -n benefit
 Provide a text file and the config created from the previous step, we will create a vector store and store the embeddings.
 
 <pre>
-python -m retrieve_cat.cli.main index -s data/benefits.txt -c benefit.yaml
+python -m retrieve_cat.cli.main index -c benefit.yaml
 </pre>
 
 # Chat

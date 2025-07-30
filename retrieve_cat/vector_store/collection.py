@@ -2,6 +2,7 @@ import logging
 from langchain_core.documents import Document
 from retrieve_cat.rag.embeddings import TextExtractor, PdfExtractor
 import os
+from retrieve_cat.vector_store.wrappers import WrapperBase
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +36,25 @@ class Collection:
 
     def ingest(self, filepath, chunk_size, chunk_overlap):
         # https://python.langchain.com/docs/integrations/vectorstores/chroma/
+
+        if filepath.startswith("obsidian:/"):
+            return self.ingest_obsidian(filepath)
+
         docs = self.to_documents(filepath, chunk_size, chunk_overlap)
         logger.info(f"ingesting {len(docs)} documents")
         logger.info(f"db path: {self.path}")
-        return self.engine_wrapper(self.embedding_function, self.path).persist(docs)
+        return self.engine.persist(docs)
+
+    def ingest_obsidian(self, path):
+        from langchain_community.document_loaders import ObsidianLoader
+        return ObsidianLoader(path).load()
+
+    def delete(self):
+        self.engine.delete()
+
+    @property
+    def engine(self) -> WrapperBase:
+        return self.engine_wrapper(self.embedding_function, self.path)
 
     def query(self, query, n_results=1):
         db = self.engine_wrapper(self.embedding_function, self.path)
