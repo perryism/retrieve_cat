@@ -12,19 +12,23 @@ class RagConfig:
     @classmethod
     def from_file(cls, path):
         with open(path, "r") as f:
-            data = yaml.safe_load(f)     
-        return cls(data) 
+            data = yaml.safe_load(f)
+        return cls(data)
 
     def __init__(self, data: dict):
-        self.data = data 
+        self.data = data
 
     @property
     def llm(self):
-        return llm_factory.create(self.data["llm"]["type"], **self.data["llm"]["args"])
+        return llm_factory.create(self.data["llm"]["type"], **self.data["llm"].get("args", {}))
 
     @property
     def embedding_model(self):
-        return self.data["embedding_model"] 
+        return self.data["embedding_model"]
+
+    @property
+    def sources(self) -> list[str]:
+        return self.data["sources"]
 
     @property
     def engine(self):
@@ -37,7 +41,7 @@ class RagConfig:
             raise Exception(f"Unknown engine {rag_engine}")
 
         return wrapper
-    
+
     @property
     def chunk_size(self):
         return self.data["index"]["chunk_size"]
@@ -47,7 +51,7 @@ class RagConfig:
         return self.data["index"]["chunk_overlap"]
 
     @property
-    def collection(self):
+    def collection(self) -> Collection:
         embedding_function = SentenceTransformerEmbeddings(model_name=self.embedding_model)
         return Collection.create(self.persistent_path, embedding_function, self.engine)
 

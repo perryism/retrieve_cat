@@ -1,6 +1,8 @@
 import logging
 from langchain_core.documents import Document
 from retrieve_cat.rag.embeddings import TextExtractor, PdfExtractor
+import os
+from retrieve_cat.vector_store.wrappers import WrapperBase
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +17,16 @@ class Collection:
         self.engine_wrapper = engine_wrapper
 
     def to_documents(self, filepath, chunk_size, chunk_overlap) -> list[Document]:
-        # if filepath extension is txt
-        if filepath.endswith(".txt"):
+        #if filepath is a folder
+        if os.path.isdir(filepath):
+            logger.debug(f"{filepath} is a folder")
+            documents = []
+            for file in os.listdir(filepath):
+                logger.info(f"Getting chunks from {file}")
+                docs = self.to_documents(os.path.join(filepath, file), chunk_size, chunk_overlap)
+                documents += docs
+            return documents
+        elif filepath.endswith(".txt"):
             extractor = TextExtractor(filepath, chunk_size, chunk_overlap)
         elif filepath.endswith(".pdf"):
             extractor = PdfExtractor(filepath)
@@ -26,10 +36,25 @@ class Collection:
 
     def ingest(self, filepath, chunk_size, chunk_overlap):
         # https://python.langchain.com/docs/integrations/vectorstores/chroma/
+
+        if filepath.startswith("obsidian:/"):
+            return self.ingest_obsidian(filepath)
+
         docs = self.to_documents(filepath, chunk_size, chunk_overlap)
         logger.info(f"ingesting {len(docs)} documents")
         logger.info(f"db path: {self.path}")
-        return self.engine_wrapper(self.embedding_function, self.path).persist(docs)
+        return self.engine.persist(docs)
+
+    def ingest_obsidian(self, path):
+        from langchain_community.document_loaders import ObsidianLoader
+        return ObsidianLoader(path).load()
+
+    def delete(self):
+        self.engine.delete()
+
+    @property
+    def engine(self) -> WrapperBase:
+        return self.engine_wrapper(self.embedding_function, self.path)
 
     def query(self, query, n_results=1):
         db = self.engine_wrapper(self.embedding_function, self.path)

@@ -8,7 +8,7 @@ from .commands.chat import chat
 
 from retrieve_cat import NAME
 
-logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(prog = NAME)
